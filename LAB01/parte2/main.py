@@ -49,19 +49,21 @@ class Visualizador:
         self.minimap = tk.Canvas(frame_principal, width=150, height=120, bg="lightgrey")
         self.minimap.pack(side="right", padx=10, pady=10)
 
-        self.criar_interface_passo()
+        self.criar_interface_movimentacao()
         self.criar_interface_rotacao()
         self.criar_interface_zoom()
+        self.criar_interface_reset()
 
         self.window = (0, 0, 10, 7.5)
         self.viewport = (0, 0, 800, 600)
         self.objetos = []  # Lista de objetos (Ponto, Reta, Polígono)
         self.mover_window = 1
 
-        self.root.bind("<Left>", lambda e: self.mover_window_direcao(-self.mover_window, 0))
-        self.root.bind("<Right>", lambda e: self.mover_window_direcao(self.mover_window, 0))
-        self.root.bind("<Up>", lambda e: self.mover_window_direcao(0, self.mover_window))
-        self.root.bind("<Down>", lambda e: self.mover_window_direcao(0, -self.mover_window))
+        # teclas de atalho
+        self.root.bind("<Left>", lambda e: self.mover_window_direcao(-self.mover_window, 0))  # ← para mover à esquerda
+        self.root.bind("<Right>", lambda e: self.mover_window_direcao(self.mover_window, 0))  # → para mover à direita
+        self.root.bind("<Up>", lambda e: self.mover_window_direcao(0, self.mover_window))  # ↑ para mover para cima
+        self.root.bind("<Down>", lambda e: self.mover_window_direcao(0, -self.mover_window))  # ↓ para mover para baixo
 
     def abrir_arquivo(self):
         caminho = filedialog.askopenfilename(filetypes=[("Arquivos XML", "*.xml")])
@@ -217,22 +219,6 @@ class Visualizador:
 
     def definir_passo(self, passo):
         self.mover_window = passo
-    
-    def criar_interface_passo(self):
-        # Frame para entrada do passo de movimentação
-        frame_passo = tk.Frame(self.root)
-        frame_passo.pack(side="left", pady=10)
-
-        label = tk.Label(frame_passo, text="Tamanho do Passo:")
-        label.pack(side="left", padx=(15,0))
-
-        # Caixa de entrada para o valor do passo
-        self.entry_passo = tk.Entry(frame_passo, width=5)
-        self.entry_passo.pack(side="left")
-
-        # Botão para definir o valor do passo
-        botao_definir_passo = tk.Button(frame_passo, text="Definir", command=self.atualizar_passo)
-        botao_definir_passo.pack(side="left", padx=5)
 
     # Função para atualizar o valor do passo de movimentação
     def atualizar_passo(self):
@@ -272,6 +258,46 @@ class Visualizador:
         self.window = (nova_wx_min, nova_wy_min, nova_wx_max, nova_wy_max)
         self.desenhar_viewport()
         self.desenhar_minimapa()
+  
+
+    def criar_interface_movimentacao(self):
+        # Frame para os botões de movimentação e o controle do passo
+        frame_movimentacao = tk.Frame(self.root)
+        frame_movimentacao.pack(side="left", pady=20, padx=20) 
+
+        # Label para "Movimento"
+        label = tk.Label(frame_movimentacao, text="MOVIMENTO", foreground="gray")
+        label.grid(row=2, column=3, columnspan=3, pady=10)
+
+        # Botão para cima
+        botao_cima = tk.Button(frame_movimentacao, text="↑", command=lambda: self.mover_window_direcao(0, self.mover_window))
+        botao_cima.grid(row=0, column=1, pady=5)
+
+        # Botão para esquerda
+        botao_esquerda = tk.Button(frame_movimentacao, text="←", command=lambda: self.mover_window_direcao(-self.mover_window, 0))
+        botao_esquerda.grid(row=1, column=0, padx=5)
+
+        # Botão para direita
+        botao_direita = tk.Button(frame_movimentacao, text="→", command=lambda: self.mover_window_direcao(self.mover_window, 0))
+        botao_direita.grid(row=1, column=2, padx=5)
+
+        # Botão para baixo
+        botao_baixo = tk.Button(frame_movimentacao, text="↓", command=lambda: self.mover_window_direcao(0, -self.mover_window))
+        botao_baixo.grid(row=2, column=1, pady=5)
+
+        # Label para "Tamanho do Passo"
+        label = tk.Label(frame_movimentacao, text="Tamanho do Passo:")
+        label.grid(row=0, column=4, columnspan=3, pady=5)
+
+        # Caixa de entrada para o valor do passo
+        self.entry_passo = tk.Entry(frame_movimentacao, width=5)
+        self.entry_passo.grid(row=1, column=4, pady=5)
+
+        # Botão para definir o valor do passo
+        botao_definir_passo = tk.Button(frame_movimentacao, text="Definir", command=self.atualizar_passo)
+        botao_definir_passo.grid(row=1, column=5, pady=5)
+
+
 
     def rotacionar_window(self, angulo):
         # Calcula o centro da window
@@ -317,25 +343,26 @@ class Visualizador:
         print("Restaurado para a posição original.")
 
     def criar_interface_rotacao(self):
-        # Frame para a rotação
+        # Criando um Frame separado para o uso de grid
         frame_rotacao = tk.Frame(self.root)
-        frame_rotacao.pack(side="left", pady=10, padx=10)
+        frame_rotacao.pack(side="left", pady=20, padx=20)
+    
+        # Label para "Rotação"
+        label = tk.Label(frame_rotacao, text="ROTAÇÃO", foreground="gray")
+        label.grid(row=2, column=1, columnspan=3, pady=5)
 
-        # Rótulo para indicar o campo de rotação
+        # Usando grid para o layout dentro do frame
         label_rotacao = tk.Label(frame_rotacao, text="Valor da Rotação:")
-        label_rotacao.pack(side="left", padx=(5,0))
+        label_rotacao.grid(row=0, column=0, columnspan=2)
 
-        # Caixa de entrada para o valor da rotação
         self.entry_rotacao = tk.Entry(frame_rotacao, width=5)
-        self.entry_rotacao.pack(side="left", padx=5)
+        self.entry_rotacao.grid(row=0, column=2, columnspan=3)
 
-        # Botão para rotacionar para a esquerda
-        botao_rotacao_esquerda = tk.Button(frame_rotacao, text="⟲ Esquerda (L)", command=self.rotacionar_esquerda)
-        botao_rotacao_esquerda.pack(side="left")
+        botao_rotacao_esquerda = tk.Button(frame_rotacao, text="⟲ Esquerda", command=self.rotacionar_esquerda)
+        botao_rotacao_esquerda.grid(row=1, column=1)
 
-        # Botão para rotacionar para a direita
-        botao_rotacao_direita = tk.Button(frame_rotacao, text="⟳ Direita (R)", command=self.rotacionar_direita)
-        botao_rotacao_direita.pack(side="left")
+        botao_rotacao_direita = tk.Button(frame_rotacao, text="⟳ Direita", command=self.rotacionar_direita)
+        botao_rotacao_direita.grid(row=1, column=2)
 
 
     def aplicar_zoom(self, fator):
@@ -365,6 +392,10 @@ class Visualizador:
         frame_zoom = tk.Frame(self.root)
         frame_zoom.pack(side="left", pady=10, padx=10)
 
+        # Label para "Zoom"
+        label = tk.Label(frame_zoom, text="ZOOM", foreground="gray")
+        label.pack(side="top", padx=15)
+
         # Botão para aumentar o zoom
         botao_zoom_in = tk.Button(frame_zoom, text="Zoom (-)", command=self.zoom_in)
         botao_zoom_in.pack(side="left")
@@ -372,11 +403,17 @@ class Visualizador:
         # Botão para diminuir o zoom
         botao_zoom_out = tk.Button(frame_zoom, text="Zoom (+)", command=self.zoom_out)
         botao_zoom_out.pack(side="left")
-    
-      # Botão para resetar as transformações
-        botao_resetar = tk.Button(frame_zoom, text="Resetar Transformações", command=self.resetar_transformacoes)
-        botao_resetar.pack(side="left", padx=15)
 
+        
+    
+
+    def criar_interface_reset(self):
+        frame_resetar = tk.Frame(self.root)
+        frame_resetar.pack(side="top", pady=10)
+
+        # Botão para resetar as transformações
+        botao_resetar = tk.Button(frame_resetar, text="Resetar Transformações", command=self.resetar_transformacoes)
+        botao_resetar.pack(padx=10)  
 
 
     def gerar_arquivo_saida(self, caminho):
